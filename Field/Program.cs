@@ -77,25 +77,25 @@ namespace async_shell
             TcpResource r = new TcpResource(buffer_size, ip_address, port);
             ISerializer<DataWithAttributes> s = new JsonSerializer<DataWithAttributes>();
             INetworkingManager<DataWithAttributes> m = new SingeResourceNetworkingManager<DataWithAttributes>(r, s);
-            string d = String.Concat(Enumerable.Repeat("a", 101));
-            int a = send_data(m, d, 2);
-            // int b = send_data(m, "hello moses", 3);
+            string d = String.Concat(Enumerable.Repeat("a", 20000));
+            int a = send_data(m, d, 3);
+            int b = send_data(m, "hello moses", 2);
 
             m.StartByTaskID(a);
-            // m.StartByTaskID(b);
+            m.StartByTaskID(b);
             
         }
 
         static async Task Main()
         {
-            _semaphore.WaitOne();
-            Action s = start_server;
-            var moses = Task.Run(start_server);
+            // _semaphore.WaitOne();
+            // Action s = start_server;
+            // var moses = Task.Run(start_server);
 
             Action a = new Action(client);
             var res = Task.Run(a);
 
-            await moses;
+            // await moses;
             await res;
         }
     }

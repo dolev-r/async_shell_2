@@ -27,9 +27,9 @@ namespace async_shell.dependencies.networking.protocol
         private int CurrentSendSize(int offset, int total_size, int default_buffer_size)
         {
             int current_send_size = 0;
-            if (total_size <= default_buffer_size + offset)
+            if (total_size - offset <= default_buffer_size)
             {
-                current_send_size = default_buffer_size - offset; 
+                current_send_size = total_size - offset; 
             }
             else
             {
