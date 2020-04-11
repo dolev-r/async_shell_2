@@ -26,17 +26,12 @@ namespace async_shell.dependencies.networking.protocol
         
         private int CurrentSendSize(int offset, int total_size, int default_buffer_size)
         {
-            int current_send_size = 0;
             if (total_size - offset <= default_buffer_size)
             {
-                current_send_size = total_size - offset; 
-            }
-            else
-            {
-                current_send_size = default_buffer_size;
+                return total_size - offset; 
             }
 
-            return current_send_size;
+            return default_buffer_size;
         }
 
         private int BufferSizeToReceive()
@@ -81,7 +76,12 @@ namespace async_shell.dependencies.networking.protocol
             return BitConverter.GetBytes(this._data_buffer.Length);
         }
 
-        public void Start()
+        private byte[] CurrentSend(int offset, int send_buffer_size) // TODO - should put this in a class.
+        {
+
+        }
+
+        public void Start() // TODO - add enumerable
         {
             this._is_running = true;
 
@@ -93,13 +93,18 @@ namespace async_shell.dependencies.networking.protocol
             int current_send_size;
             int default_buffer_size = this._resource.GetDefaultBufferSize();
             int amount_of_bytes_sent;
+            byte[] actually_send;
             while (offset < this._data_buffer.Length)
             {
                 this.send_controll_semaphore.WaitOne();
 
                 current_send_size = this.CurrentSendSize(offset, this._data_buffer.Length, default_buffer_size);
 
-                amount_of_bytes_sent = this._resource.Send(this._data_buffer, offset, current_send_size);
+                Index Start = offset;
+                Index End = offset + current_send_size;
+                actually_send = this._data_buffer[Start..End];
+
+                amount_of_bytes_sent = this._resource.Send(actually_send);
                 offset += amount_of_bytes_sent;
 
                 byte[] responce = this.Recieve();

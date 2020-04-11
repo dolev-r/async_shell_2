@@ -17,7 +17,7 @@ def main():
                     data = conn.recv(buffer_size)
                     print(data)
                     if not data: break
-                    x = b"hello alan"
+                    x = b"a" * 1500
                     conn.send(len(x).to_bytes(4, byteorder='little'))
                     conn.send(x)
 

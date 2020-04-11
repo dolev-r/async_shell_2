@@ -4,7 +4,7 @@ namespace async_shell.dependencies.networking.network_resource
     {   
         int GetDefaultBufferSize();
 
-        int Send(byte[] byte_buffer, int offset, int buffer_size);
+        int Send(byte[] byte_buffer);
         
         int Receive(byte[] storage_buffer);
         

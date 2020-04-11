@@ -36,30 +36,30 @@ namespace async_shell
             return client_socket;
         }
 
-        static async void start_server()
-        {
-            System.Console.WriteLine("Server started");
-            Socket sock = await get_client_socket();
-            System.Console.WriteLine("client socket connected");
+        // static async void start_server()
+        // {
+        //     System.Console.WriteLine("Server started");
+        //     Socket sock = await get_client_socket();
+        //     System.Console.WriteLine("client socket connected");
 
-            // byte[] holding_buffer = new byte[buffer_size];
+        //     // byte[] holding_buffer = new byte[buffer_size];
 
-            TcpResource r = new TcpResource(buffer_size, sock);
-            IPausableDataSender reciver = new PausableDataSender(r);
+        //     TcpResource r = new TcpResource(buffer_size, sock);
+        //     IPausableDataSender reciver = new PausableDataSender(r);
             
-            byte[] a = Encoding.UTF8.GetBytes("a");
+        //     byte[] a = Encoding.UTF8.GetBytes("a");
             
-            while (true)
-            {
-                byte[] data = new byte[buffer_size];
-                r.Receive(data);
-                string data_in_string = Encoding.UTF8.GetString(data);
-                System.Console.WriteLine(data_in_string);
-                byte[] buffer = BitConverter.GetBytes(a.Length);
-                byte[] res = buffer.Concat(a).ToArray();
-                r.Send(res, 0, res.Length);
-            } 
-        }
+        //     while (true)
+        //     {
+        //         byte[] data = new byte[buffer_size];
+        //         r.Receive(data);
+        //         string data_in_string = Encoding.UTF8.GetString(data);
+        //         System.Console.WriteLine(data_in_string);
+        //         byte[] buffer = BitConverter.GetBytes(a.Length);
+        //         byte[] res = buffer.Concat(a).ToArray();
+        //         r.Send(res, 0, res.Length);
+        //     } 
+        // }
 
         static int send_data(INetworkingManager<DataWithAttributes> m, string content, int priority)
         {
@@ -77,7 +77,7 @@ namespace async_shell
             TcpResource r = new TcpResource(buffer_size, ip_address, port);
             ISerializer<DataWithAttributes> s = new JsonSerializer<DataWithAttributes>();
             INetworkingManager<DataWithAttributes> m = new SingeResourceNetworkingManager<DataWithAttributes>(r, s);
-            string d = String.Concat(Enumerable.Repeat("a", 20000));
+            string d = String.Concat(Enumerable.Repeat("a", 1000));
             int a = send_data(m, d, 3);
             int b = send_data(m, "hello moses", 2);
 

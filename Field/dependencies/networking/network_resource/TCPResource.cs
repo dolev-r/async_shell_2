@@ -32,18 +32,14 @@ namespace async_shell.dependencies.networking.network_resource
             return this._default_buffer_size;
         }
         
-        public int Send(byte[] byte_buffer, int offset, int buffer_size)
+        public int Send(byte[] byte_buffer)
         {
-            if (buffer_size > this._default_buffer_size)
+            if (byte_buffer.Length > this._default_buffer_size)
             {
                 throw new System.Exception("buffer size is bigger then allowed");
             }
-            if (byte_buffer.Length < buffer_size)
-            {
-                return this._socket.Send(byte_buffer, offset, byte_buffer.Length, SocketFlags.None);
-            }
 
-            return this._socket.Send(byte_buffer, offset, buffer_size, SocketFlags.None);
+            return this._socket.Send(byte_buffer, 0, byte_buffer.Length, SocketFlags.None);
         }
 
         public int Receive(byte[] buffer)
