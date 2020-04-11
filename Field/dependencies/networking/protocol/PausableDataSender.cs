@@ -11,11 +11,13 @@ namespace async_shell.dependencies.networking.protocol
         private byte[] _data_buffer;
         private Semaphore send_controll_semaphore = new Semaphore(1, 1);
         private bool _is_running = false;
+        private int _session_id;
 
         public PausableDataSender(IResource resource, byte[] data_buffer, int session_id)
         {
             this._resource = resource;
             this._data_buffer = data_buffer;
+            this._session_id = session_id;
         }
 
         // in case of only listening.
@@ -76,9 +78,15 @@ namespace async_shell.dependencies.networking.protocol
             return BitConverter.GetBytes(this._data_buffer.Length);
         }
 
-        private byte[] CurrentSend(int offset, int send_buffer_size) // TODO - should put this in a class.
+        private byte[] CurrentSend(int offset) // TODO - should put this in a class named protocol.
         {
-
+            byte[] empty_buffer;
+            int send_buffer_size = this._resource.GetDefaultBufferSize();
+            byte[] chunk_header = BitConverter.GetBytes(this._session_id);
+            Index start = offset;
+            Index end = offset + send_buffer_size - chunk_header.Length;
+            empty_buffer = this._data_buffer[start..end];
+            return chunk_header.Concat(empty_buffer).ToArray();
         }
 
         public void Start() // TODO - add enumerable
@@ -90,22 +98,17 @@ namespace async_shell.dependencies.networking.protocol
             this._data_buffer = header.Concat(this._data_buffer).ToArray();
 
             int offset = 0;
-            int current_send_size;
-            int default_buffer_size = this._resource.GetDefaultBufferSize();
-            int amount_of_bytes_sent;
+            int real_offset = 0;
+            
             byte[] actually_send;
-            while (offset < this._data_buffer.Length)
+            while (real_offset < this._data_buffer.Length)
             {
                 this.send_controll_semaphore.WaitOne();
-
-                current_send_size = this.CurrentSendSize(offset, this._data_buffer.Length, default_buffer_size);
-
-                Index Start = offset;
-                Index End = offset + current_send_size;
-                actually_send = this._data_buffer[Start..End];
-
-                amount_of_bytes_sent = this._resource.Send(actually_send);
-                offset += amount_of_bytes_sent;
+                
+                actually_send = new byte[0];
+                actually_send = this.CurrentSend(offset);
+                offset += this._resource.GetDefaultBufferSize() - 4;
+                real_offset += this._resource.Send(actually_send);
 
                 byte[] responce = this.Recieve();
                 this.send_controll_semaphore.Release();
