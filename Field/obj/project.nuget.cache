@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "8dZGxW0CxjxgQ0Hen8dmLtA5Jgc29IqzmyA9tenwHg75uM0ibk4CSfUjQuPP/NlsWA3s/k7iSF+NpH8KvLQMpw==",
+  "success": true,
+  "projectFilePath": "/home/dolev/coding/attack_tools/async_shell/Field/async_shell.csproj",
+  "expectedPackageFiles": [
+    "/home/dolev/.nuget/packages/newtonsoft.json/12.0.3/newtonsoft.json.12.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
