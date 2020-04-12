@@ -7,7 +7,6 @@ namespace async_shell.dependencies.networking.protocol
     {   
         private Dictionary<int, IPausableDataSender> _pool = new Dictionary<int, IPausableDataSender>();
         private IResource _resource;
-        private bool _is_running;
         private int _session_id_counter;
         
         public SingleResourceSessionBasedProtocol(IResource resource)
@@ -29,14 +28,14 @@ namespace async_shell.dependencies.networking.protocol
             this._pool[session_id].Start();
         }
         
-        public void Pause(int session_id)
+        public bool Pause(int session_id)
         {
-            this._pool[session_id].Pause();
+            return this._pool[session_id].Pause();
         }
 
-        public void Resume(int session_id)
+        public bool Resume(int session_id)
         {
-            this._pool[session_id].Resume();
+            return this._pool[session_id].Resume();
         }
 
         public byte[] Receive(int session_id)

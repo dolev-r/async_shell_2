@@ -12,9 +12,9 @@ namespace async_shell.dependencies.networking.network_manager
         
         void StartTaskByID(int task_id);
 
-        void ResumeTaskByID(int task_id);
+        bool ResumeTaskByID(int task_id);
         
-        void PauseTaskByID(int task_id);
+        bool PauseTaskByID(int task_id);
 
         void RemoveFromPool(int task_id);
 

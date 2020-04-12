@@ -12,12 +12,10 @@ namespace async_shell.dependencies.networking.network_manager
         private List<ISingleTask> _awaiting_pool = new List<ISingleTask>();
         private ISessionBasedProtocol s;
         private int _task_counter;
-        private Action _on_task_finish;
 
-        public SessionBasedTaskScheduler(Action on_task_finish, IResource resource)
+        public SessionBasedTaskScheduler(IResource resource)
         {
             this._task_counter = 0;
-            this._on_task_finish = on_task_finish;
             this.s = new SingleResourceSessionBasedProtocol(resource);
         }
 
@@ -56,27 +54,27 @@ namespace async_shell.dependencies.networking.network_manager
             ISingleTask t = this.GetTaskFromID(task_id);
             int session_id = this._pool[t];
             this.s.Start(session_id);
+            this.RemoveFromPool(task_id);
         }
 
-        public void ResumeTaskByID(int task_id)
+        public bool ResumeTaskByID(int task_id)
         {
             ISingleTask t = this.GetTaskFromID(task_id);
             int session_id = this._pool[t];
-            this.s.Resume(session_id);
+            return this.s.Resume(session_id);
         }
         
-        public void PauseTaskByID(int task_id)
+        public bool PauseTaskByID(int task_id)
         {
             ISingleTask t = this.GetTaskFromID(task_id);
             int session_id = this._pool[t];
-            this.s.Pause(session_id);
+            return this.s.Pause(session_id);
         }
 
         public void RemoveFromPool(int task_id)
         {
             ISingleTask t = this.GetTaskFromID(task_id);
             this._pool.Remove(t);
-            this._on_task_finish();
         }
 
         // public int GetTaskIDViaFunc(Func<DataAttributes, bool> func)

@@ -11,6 +11,7 @@ namespace async_shell.dependencies.networking.protocol
         private byte[] _data_buffer;
         private Semaphore send_controll_semaphore = new Semaphore(1, 1);
         private bool _is_running = false;
+        private bool _has_started = false;
         private int _session_id;
 
         public PausableDataSender(IResource resource, byte[] data_buffer, int session_id)
@@ -76,6 +77,7 @@ namespace async_shell.dependencies.networking.protocol
         public void Start() 
         {
             this._is_running = true;
+            this._has_started = true;
             int real_offset = 0;
             
             PacketGenerator g = new PacketGenerator(this._data_buffer, this._session_id, this._resource.GetDefaultBufferSize());
@@ -88,24 +90,34 @@ namespace async_shell.dependencies.networking.protocol
                 byte[] responce = this.Recieve();
                 this.send_controll_semaphore.Release();
             }
+        
         }
         
-        public void Pause()
+        public bool Pause()
         {
-            if (this._is_running)
+            if (this._is_running && this._has_started)
             {
                 this.send_controll_semaphore.WaitOne();
                 this._is_running = false;
+                return true;
             }
+            return false;
         }
 
-        public void Resume()
+        public bool Resume()
         {
-            if (this._is_running)
+            if (!this._is_running && this._has_started)
             {
                 this.send_controll_semaphore.Release();
                 this._is_running = true;
+                return true;
             }
+            return false;
+        }
+
+        public bool HasStarted()
+        {
+            return this._has_started;
         }
     }
 }

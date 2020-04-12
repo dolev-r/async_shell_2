@@ -3,8 +3,8 @@ namespace async_shell.dependencies.networking.protocol
     public interface IPausableDataSender
     {
         void Start();
-        void Pause();
-        void Resume();
+        bool Pause();
+        bool Resume();
         byte[] Recieve();
     }
 }
