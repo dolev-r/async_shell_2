@@ -74,16 +74,27 @@ namespace async_shell
             _semaphore.WaitOne();
             IPAddress ip_address = IPAddress.Parse("127.0.0.1");
             int port = 12345;
+            System.Console.WriteLine("Started client");
             TcpResource r = new TcpResource(buffer_size, ip_address, port);
             ISerializer<DataWithAttributes> s = new JsonSerializer<DataWithAttributes>();
             INetworkingManager<DataWithAttributes> m = new SingeResourceNetworkingManager<DataWithAttributes>(r, s);
-            string d = String.Concat(Enumerable.Repeat("a", 1000));
-            int a = send_data(m, d, 3);
-            int b = send_data(m, "hello moses", 2);
+            string d1 = String.Concat(Enumerable.Repeat("a", 1000));
+            string d2 = String.Concat(Enumerable.Repeat("b", 1000));
+            int a = send_data(m, d1, 3);
+            int b = send_data(m, d2, 2);
 
             m.StartByTaskID(a);
-            m.StartByTaskID(b);
+
+            m.OnReThink();
             
+            m.StartByTaskID(b);
+
+            Thread.Sleep(2000);
+
+            m.OnReThink();
+
+            Thread.Sleep(5000);
+
         }
 
         static async Task Main()
@@ -96,7 +107,7 @@ namespace async_shell
             var res = Task.Run(a);
 
             // await moses;
-            await res;
+            res.Wait();
         }
     }
 }

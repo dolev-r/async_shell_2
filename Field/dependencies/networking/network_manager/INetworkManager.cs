@@ -17,5 +17,7 @@ namespace async_shell.dependencies.networking.network_manager
         bool PauseByTaskID(int task_id);
         
         bool CancelByTaskID(int task_id);
+
+        void OnReThink();
     }
 }

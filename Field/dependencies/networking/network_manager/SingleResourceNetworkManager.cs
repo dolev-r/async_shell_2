@@ -1,3 +1,6 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using async_shell.dependencies.networking.network_resource;
 using async_shell.dependencies.serializer;
@@ -17,45 +20,60 @@ namespace async_shell.dependencies.networking.network_manager
 
         private int _current_running_task = -1;
 
+        private Semaphore _semaphore = new Semaphore(1,1);
+
         public SingeResourceNetworkingManager(IResource communication_resource, ISerializer<TData> serializer)
         {
             this._task_scheduler = new SessionBasedTaskScheduler(communication_resource);
             this._communcation_resource = communication_resource;
             this._serializer = serializer;
             this._tasks_paused_by_user = new List<int>();
+            this._awaiting_to_run_tasks = new List<int>();
         }
 
-        private void nothing()
+        private int TaskIDToRunNext()
         {
-            System.Console.WriteLine("on re think invoked!");
-        }
-
-        private void OnReThink()
-        {
-            int most_important_task = this._task_scheduler.GetMostImportantTaskID(0);
-            if (this._current_running_task != most_important_task && !this._tasks_paused_by_user.Contains(this._current_running_task))
+            for (int i = 0; i < this._task_scheduler.AmountOfTasks(); i++)
             {
-                this._task_scheduler.PauseTaskByID(this._current_running_task); // TODO - need to check what happens when no tasks have to be started.
-
-                if (most_important_task is in this._awaiting_to_run_tasks)
+                int most_important_task = this._task_scheduler.GetMostImportantTaskID(i);
+                if (this._current_running_task != most_important_task && !this._tasks_paused_by_user.Contains(this._current_running_task))
                 {
-                    this._task_scheduler.StartTaskByID(most_important_task);
+                    return most_important_task;
+                }
+            }
+            return -1;
+        }
+
+        private void InvokeReThink()
+        {
+            this._semaphore.Release();
+        }
+
+        public void OnReThink()
+        {
+            while (true)
+            {
+                this._semaphore.WaitOne();
+                int task_id_to_run = this.TaskIDToRunNext();
+
+                if (this._current_running_task != -1) // AKA - no task is running, TODO - look what happens when no task is running 
+                {
+                    this._task_scheduler.PauseTaskByID(this._current_running_task);
+                }
+
+                if (this._awaiting_to_run_tasks.Contains(task_id_to_run))
+                {
+                    Action<int> a = new Action<int>()
+                    var t = Task.Run()
+                    this._task_scheduler.StartTaskByID(task_id_to_run);
+                    this._current_running_task = task_id_to_run;
                 }
 
                 else
                 {
-                    this._task_scheduler.ResumeTaskByID(most_important_task);
+                    this._task_scheduler.ResumeTaskByID(task_id_to_run);
+                    this._current_running_task = task_id_to_run;
                 }
-            }
-            
-            if (this.current_running_task != most_important_task && 
-                !this._tasks_paused_by_user.Contains(most_important_task) && 
-                this._tasks_allowed_to_run_by_user.Contains(most_important_task))
-            {
-                this._StopByTaskID(this.current_running_task);
-                this.current_running_task = most_important_task;
-                this._StartByTaskID(this.current_running_task);
-                break;
             }
         }
         
@@ -72,19 +90,13 @@ namespace async_shell.dependencies.networking.network_manager
         public bool StartByTaskID(int task_id)
         {
             this._awaiting_to_run_tasks.Add(task_id);
-            this._task_scheduler.StartTaskByID(task_id);
-            return true;
-        }
-
-        public bool _ResumeByTaskID(int task_id)
-        {
-            this._task_scheduler.ResumeTaskByID(task_id);
             return true;
         }
 
         public bool ResumeByTaskID(int task_id)
         {
-            return this._ResumeByTaskID(task_id);
+            this._task_scheduler.ResumeTaskByID(task_id);
+            return true;
         }
 
         private bool _PauseByTaskID(int task_id)
